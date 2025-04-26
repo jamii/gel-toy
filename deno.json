@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "@gel/generate": "npm:@gel/generate@^0.6.2",
+    "gel": "npm:gel@^2.0.2",
+    "edgedb": "npm:gel@^2.0.2"
+  }
+}

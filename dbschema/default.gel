@@ -1,3 +1,10 @@
 module default {
-
+   type Person {
+      nconst: str;
+      primaryName: str;
+      birthYear: int16;
+      deathYear: int16;
+      multi primaryProfession: str;
+      multi knownForTitles: str;
+   }
 }
