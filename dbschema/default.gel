@@ -1,10 +1,14 @@
 module default {
    type Person {
-      nconst: str;
-      primaryName: str;
-      birthYear: int16;
-      deathYear: int16;
+      required nconst: str;
+      required primaryName: str;
+      optional birthYear: int16;
+      optional deathYear: int16;
       multi primaryProfession: str;
       multi knownForTitles: str;
    }
+   function filter_tsv_null(s: str) -> optional str
+      using (
+         if (s = "\\N") then <str>{} else s
+      );
 }

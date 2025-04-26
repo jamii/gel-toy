@@ -1,43 +1,31 @@
 import { createClient } from "gel";
 import { TextLineStream } from "jsr:@std/streams@0.223.0/text-line-stream";
-import { insertPerson } from "./queries/insertPerson.query.ts";
+import { insertPersons } from "./queries/insertPersons.query.ts";
 
-async function* readTsv(
-  filename: string,
-): AsyncGenerator<string[], void, void> {
+async function readTsv(filename: string): Promise<string[][]> {
   const lines = (await Deno.open(filename)).readable
     .pipeThrough(new TextDecoderStream())
     .pipeThrough(new TextLineStream());
-  var isFirstLine = true;
+  const rows = [];
+  let isFirstLine = true;
   for await (const line of lines) {
     if (isFirstLine) {
       isFirstLine = false;
       continue;
     }
-    yield line.split("\t");
+    rows.push(line.split("\t"));
   }
+  return rows;
 }
 
+const persons = await readTsv("./data/name.basics.tsv");
+console.log(persons[0]);
 const client = createClient();
-for await (const row of readTsv("./data/name.basics.tsv")) {
-  const [
-    nconst,
-    primaryName,
-    birthYear,
-    deathYear,
-    primaryProfession,
-    knownForTitles,
-  ] = row;
-  await insertPerson(client, {
-    nconst,
-    primaryName,
-    birthYear: parseInt(birthYear, 10),
-    deathYear: parseInt(deathYear, 10),
-    primaryProfession: primaryProfession.split(","),
-    knownForTitles: knownForTitles.split(","),
-  });
-}
-
-console.log(await client.querySingle("SELECT 1 + <int64>$num", { num: 2 }));
-
+const chunk_size = 1_000_000;
+await client.transaction(async (tx) => {
+  for (let i = 0; i < persons.length; i += chunk_size) {
+    console.log(i);
+    await insertPersons(tx, { persons: persons.slice(i, i + chunk_size) });
+  }
+});
 await client.close();
