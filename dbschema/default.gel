@@ -1,14 +1,40 @@
 module default {
-   type Person {
-      required nconst: str;
-      required primaryName: str;
-      optional birthYear: int16;
-      optional deathYear: int16;
-      multi primaryProfession: str;
-      multi knownForTitles: str;
-   }
-   function filter_tsv_null(s: str) -> optional str
-      using (
-         if (s = "\\N") then <str>{} else s
-      );
+    type Person {
+        required nconst: str {
+           constraint exclusive;
+        };
+        required primaryName: str;
+        optional birthYear: int16;
+        optional deathYear: int16;
+        multi primaryProfession: str;
+        multi knownForTitles: str;
+    }
+
+    type Title {
+        required tconst: str {
+           constraint exclusive;
+        };
+        required titleType: str;
+        required primaryTitle: str;
+        required originalTitle: str;
+        required isAdult: bool;
+        optional startYear: int16;
+        optional endYear: int16;
+        optional runtimeMinutes: int32;
+        multi genres: str;
+    }
+
+    type Principal {
+        required person: Person;
+        required title: Title;
+        required ordering: int16;
+        required category: str;
+        optional job: str;
+        multi characters: str;
+    }
+
+    function filter_tsv_null(s: str) -> optional str
+        using (
+            if (s = "\\N") then <str>{} else s
+        );
 }
